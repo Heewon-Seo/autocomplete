@@ -1,0 +1,7 @@
+.reset {
+    display: none;
+}
+
+.reset.show {
+    display: block;
+}
