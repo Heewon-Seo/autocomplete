@@ -1,4 +1,3 @@
-"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -35,6 +34,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+// caching
+import { ApiCache } from "./cache.js";
+var apiCache = new ApiCache();
 // utils
 function $(selector) {
     return document.querySelector(selector);
@@ -47,7 +49,8 @@ var resultArea = $(".results");
 function startApp() {
     initEvents();
     resetBtnClick();
-    focusOutInput();
+    // focusOutInput();
+    arrowKey();
 }
 // events
 function initEvents() {
@@ -55,7 +58,6 @@ function initEvents() {
 }
 function findInputValue(e) {
     resetResults();
-    removeResetBtn();
     var timer;
     var value = e.target.value;
     if (value !== null || value !== '') {
@@ -67,6 +69,9 @@ function findInputValue(e) {
             writeInfo(value);
         }, 200);
     }
+    else {
+        removeResetBtn();
+    }
 }
 function resetBtnClick() {
     resetBtn.addEventListener('click', resetInput);
@@ -76,22 +81,48 @@ function resetResults() {
 }
 function resetInput() {
     searchBar.value = '';
+    removeResetBtn();
 }
 function focusOutInput() {
     searchBar.addEventListener('focusout', resetResults);
+}
+function arrowKey() {
+    window.addEventListener('keydown', moveSelectedItem);
 }
 function showResetBtn() {
     resetBtn.classList.add('show');
 }
 function removeResetBtn() {
-    console.log('remove');
     resetBtn.classList.remove('show');
+}
+function moveSelectedItem(e) {
+    if (resultArea.childElementCount > 0) {
+        var selectedItem = $('.selected');
+        var previousItem = selectedItem.previousElementSibling;
+        var nextItem = selectedItem.nextElementSibling;
+        if (e.keyCode === 38 && previousItem != null) {
+            previousItem.classList.add('selected');
+            selectedItem.classList.remove('selected');
+        }
+        else if (e.keyCode === 40 && nextItem != null) {
+            nextItem.classList.add('selected');
+            selectedItem.classList.remove('selected');
+        }
+    }
 }
 // api
 function fetchInfo(value) {
     var url = "https://5qfov74y3c.execute-api.ap-northeast-2.amazonaws.com/web-front/autocomplete?value=".concat(value);
+    console.log(url);
+    if (apiCache.recordExists(url)) {
+        return new Promise(function (resolve) {
+            return resolve(apiCache.get(url));
+        });
+    }
     return fetch(url).then(function (response) {
-        return response.json();
+        var result = response.json();
+        apiCache.set(url, result);
+        return result;
     });
 }
 function writeInfo(value) {
@@ -109,13 +140,24 @@ function writeInfo(value) {
     });
 }
 function setResultList(data) {
+    // id의 최소값에 selected class 추가
+    var idArray = [];
+    data.forEach(function (element) { idArray.push(element.id); });
     data.forEach(function (element) {
         var li = document.createElement('li');
-        li.setAttribute('class', 'list-item');
+        if (element.id == Math.min.apply(Math, idArray)) {
+            li.setAttribute('class', 'selected list-item');
+        }
+        else {
+            li.setAttribute('class', 'list-item');
+        }
         var span = document.createElement('span');
         span.textContent = element.text;
         li.appendChild(span);
         resultArea.append(li);
     });
 }
-startApp();
+document.addEventListener('DOMContentLoaded', function () {
+    startApp();
+});
+export { fetchInfo, findInputValue, writeInfo, initEvents };
