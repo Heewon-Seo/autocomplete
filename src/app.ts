@@ -35,6 +35,7 @@ function startApp(): void {
     resetBtnClick();
     focusOutInput();
     arrowKey();
+    focusingResultArea();
 }
 
 // events
@@ -52,6 +53,10 @@ function focusOutInput(): void {
 
 function arrowKey(): void {
     window.addEventListener('keydown', moveSelectedItem);
+}
+
+function focusingResultArea(): void {
+    resultArea.addEventListener('mouseenter', focusingItem);
 }
 
 // functions
@@ -90,21 +95,45 @@ function removeResetBtn(): void {
 }
 
 function moveSelectedItem(e: KeyboardEvent): void {
+
     if (resultArea.childElementCount > 0) {
         
         let selectedItem = $('.selected');
         let previousItem = selectedItem.previousElementSibling;
         let nextItem = selectedItem.nextElementSibling;
 
-        if (e.keyCode === 38 && previousItem != null) {
-            e.preventDefault();
-            previousItem.classList.add('selected');
-            selectedItem.classList.remove('selected');
-        } else if (e.keyCode === 40 && nextItem != null) {
-            e.preventDefault();
-            nextItem.classList.add('selected');
-            selectedItem.classList.remove('selected');
-        }
+            if (e.keyCode === 38 && previousItem != null) {
+                e.preventDefault();
+                previousItem.classList.add('selected');
+                selectedItem.classList.remove('selected');
+            } else if (e.keyCode === 40 && nextItem != null) {
+                e.preventDefault();
+                nextItem.classList.add('selected');
+                selectedItem.classList.remove('selected');
+            }
+        
+    }
+}
+
+function focusingItem(): void {
+    if (resultArea.childElementCount > 0) {
+
+        const lists = Array.from(resultArea.children);
+
+        lists.forEach(element => {
+
+            // 마우스가 resultArea로 진입했을 때, 기존 포커싱 아이템을 초기화
+            element.classList.remove('selected');
+
+            element.addEventListener('mouseout', () => {
+                element.classList.remove('selected');
+            });
+
+            element.addEventListener('mouseover', () => {
+                element.classList.add('selected');
+            });
+
+        });
     }
 }
 
