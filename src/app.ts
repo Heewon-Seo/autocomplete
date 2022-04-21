@@ -64,7 +64,6 @@ function findInputValue(e: Event): void {
     const target = e.target;
     if (!(target instanceof HTMLInputElement)) return;
 
-    let timer: number | undefined;
     let value: string = target.value;
 
     if (value != '') {
@@ -105,10 +104,12 @@ function moveSelectedItem(e: KeyboardEvent): void {
             if (e.keyCode === 38 && previousItem != null) {
                 e.preventDefault();
                 previousItem.classList.add('selected');
+                searchBar.value = previousItem.firstChild?.textContent as string;
                 selectedItem.classList.remove('selected');
             } else if (e.keyCode === 40 && nextItem != null) {
                 e.preventDefault();
                 nextItem.classList.add('selected');
+                searchBar.value = nextItem.firstChild?.textContent as string;
                 selectedItem.classList.remove('selected');
             }
         
@@ -131,6 +132,7 @@ function focusingItem(): void {
 
             element.addEventListener('mouseover', () => {
                 element.classList.add('selected');
+                searchBar.value = element.firstChild?.textContent as string;
             });
 
         });
