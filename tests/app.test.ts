@@ -1,10 +1,7 @@
 import { fetchInfo, findInputValue, initEvents, writeInfo } from "../src/app";
+import { eventModule } from "./event"
 
 jest.useFakeTimers();
-
-beforeEach(() => {
-
-});
 
 test("fetchInfo에 '가'를 넣으면 결과 배열을 반환한다", () => {
 
@@ -17,31 +14,23 @@ test("fetchInfo에 '가'를 넣으면 결과 배열을 반환한다", () => {
     });
 });
 
-test('keypress fires callback', () => { 
-
-    const input = global.document.createElement("input");
-    input.classList.add("search-bar");
-    global.document.body.appendChild(input);
-    const searchBar = global.document.body.querySelector('.search-bar') as Element;
-    searchBar.dispatchEvent(new Event('keydown'));
-
-    initEvents();
-
-    jest.advanceTimersByTime(200);
-
-    expect(writeInfo).toHaveBeenCalled();
-    expect(writeInfo).toBeCalledTimes(1);
+test('input 이벤트가 발생하면 해당 함수가 100ms에 1번 call 된다', () => {
     
- })
+    const instanceMock = jest.fn();
 
-// test("info가 한번만 호출된다", () => {
+    document.addEventListener = jest
+        .fn()
+        .mockImplementationOnce((event, callback) => {
+            callback();
+        });
 
-//     for (let index = 0; index < 100; index++) {
-//         findInputValue(func);
-//     }
+    jest.advanceTimersByTime(100);
+    
+    expect(document.addEventListener).toBeCalledWith(
+        "input",
+        expect.any(Function)
+    );
 
-//     jest.advanceTimersByTime(200);
-
-//     expect(func).toBeCalledTimes(1);
-
-// });
+    expect(instanceMock).toBeCalledTimes(1);
+    
+ });

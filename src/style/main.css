@@ -1,3 +1,9 @@
+@media all and (max-width: 480px){
+    main {
+        display: none;
+    }
+}
+
 body {
     background: #f2f2f2;
 }
@@ -15,10 +21,10 @@ li {
     margin: 5px;
 }
 
-.reset {
-    visibility: hidden;
+.reset-btn.show {
+    visibility: inherit;
 }
 
-.reset.show {
-    visibility: inherit;
+.results.show {
+    display: block;
 }

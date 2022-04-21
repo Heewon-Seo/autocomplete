@@ -43,13 +43,13 @@ function $(selector) {
 }
 // DOM
 var searchBar = $(".search-bar");
-var resetBtn = $(".reset");
+var resetBtn = $(".reset-btn");
 var resultArea = $(".results");
 // methods
 function startApp() {
     initEvents();
     resetBtnClick();
-    // focusOutInput();
+    focusOutInput();
     arrowKey();
 }
 // events
@@ -57,19 +57,22 @@ function initEvents() {
     searchBar.addEventListener('input', findInputValue);
 }
 function findInputValue(e) {
-    resetResults();
+    var target = e.target;
+    if (!(target instanceof HTMLInputElement))
+        return;
     var timer;
-    var value = e.target.value;
-    if (value !== null || value !== '') {
+    var value = target.value;
+    if (value != '') {
         showResetBtn();
         if (timer) {
             clearTimeout(timer);
         }
         timer = setTimeout(function () {
             writeInfo(value);
-        }, 200);
+        }, 100);
     }
     else {
+        resetResults();
         removeResetBtn();
     }
 }
@@ -77,6 +80,7 @@ function resetBtnClick() {
     resetBtn.addEventListener('click', resetInput);
 }
 function resetResults() {
+    resultArea.classList.remove('show');
     resultArea.innerHTML = '';
 }
 function resetInput() {
@@ -101,10 +105,12 @@ function moveSelectedItem(e) {
         var previousItem = selectedItem.previousElementSibling;
         var nextItem = selectedItem.nextElementSibling;
         if (e.keyCode === 38 && previousItem != null) {
+            e.preventDefault();
             previousItem.classList.add('selected');
             selectedItem.classList.remove('selected');
         }
         else if (e.keyCode === 40 && nextItem != null) {
+            e.preventDefault();
             nextItem.classList.add('selected');
             selectedItem.classList.remove('selected');
         }
@@ -140,6 +146,7 @@ function writeInfo(value) {
     });
 }
 function setResultList(data) {
+    resetResults();
     // id의 최소값에 selected class 추가
     var idArray = [];
     data.forEach(function (element) { idArray.push(element.id); });
@@ -156,6 +163,7 @@ function setResultList(data) {
         li.appendChild(span);
         resultArea.append(li);
     });
+    resultArea.classList.add("show");
 }
 document.addEventListener('DOMContentLoaded', function () {
     startApp();

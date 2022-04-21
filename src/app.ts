@@ -1,6 +1,6 @@
 
 // caching
-import { ApiCache } from "./cache";
+import {ApiCache} from "./cache";
 const apiCache = new ApiCache();
 
 // interface
@@ -16,14 +16,14 @@ function $(selector: string) {
 
 // DOM
 const searchBar = $(".search-bar") as HTMLInputElement;
-const resetBtn = $(".reset") as HTMLButtonElement;
+const resetBtn = $(".reset-btn") as HTMLButtonElement;
 const resultArea = $(".results") as HTMLDivElement;
 
 // methods
 function startApp(): void {
     initEvents();
     resetBtnClick();
-    // focusOutInput();
+    focusOutInput();
     arrowKey();
 }
 
@@ -32,21 +32,23 @@ function initEvents(): void {
     searchBar.addEventListener('input', findInputValue);
 }
 
-function findInputValue(e: any): void {
-    resetResults();
+function findInputValue(e: Event): void {
+    const target = e.target;
+    if (!(target instanceof HTMLInputElement)) return;
 
-    let timer: any;
-    let value: string = e.target.value;
+    let timer: number | undefined;
+    let value: string = target.value;
     
-    if (value !== null || value !== '') {
+    if (value != '') {
         showResetBtn();
         if (timer) {
             clearTimeout(timer);
         }
         timer = setTimeout(function () {
             writeInfo(value);
-        }, 200);
+        }, 100) as unknown as number;
     } else {
+        resetResults();
         removeResetBtn();
     }
 }
@@ -56,6 +58,7 @@ function resetBtnClick(): void {
 }
 
 function resetResults(): void {
+    resultArea.classList.remove('show');
     resultArea.innerHTML = '';
 }
 
@@ -80,15 +83,17 @@ function removeResetBtn(): void {
     resetBtn.classList.remove('show');
 }
 
-function moveSelectedItem(e: any): void {
+function moveSelectedItem(e: KeyboardEvent): void {
     if (resultArea.childElementCount > 0) {
         let selectedItem = $('.selected');
         let previousItem = selectedItem.previousElementSibling;
         let nextItem = selectedItem.nextElementSibling;
         if (e.keyCode === 38 && previousItem != null) {
+            e.preventDefault();
             previousItem.classList.add('selected');
             selectedItem.classList.remove('selected');
         } else if (e.keyCode === 40 && nextItem != null) {
+            e.preventDefault();
             nextItem.classList.add('selected');
             selectedItem.classList.remove('selected');
         }
@@ -97,7 +102,7 @@ function moveSelectedItem(e: any): void {
 
 // api
 function fetchInfo(value:string): Promise<Info[]> {
-    const url = `https://5qfov74y3c.execute-api.ap-northeast-2.amazonaws.com/web-front/autocomplete?value=${value}`;
+    const url: string = `https://5qfov74y3c.execute-api.ap-northeast-2.amazonaws.com/web-front/autocomplete?value=${value}`;
     console.log(url);
     if (apiCache.recordExists(url)) {
         return new Promise(resolve => 
@@ -116,6 +121,7 @@ async function writeInfo(value:string): Promise<void> {
 }
 
 function setResultList(data:Info[]): void {
+    resetResults();
 
     // id의 최소값에 selected class 추가
     let idArray: number[] = [];
@@ -133,9 +139,11 @@ function setResultList(data:Info[]): void {
         li.appendChild(span);
         resultArea.append(li);
     });
+    
+    resultArea.classList.add("show");
 }
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
     startApp();
 });
 
