@@ -11,6 +11,10 @@ export class SearchBar extends HTMLElement {
     render() {
         this.innerHTML = `
         <style>
+        img {
+            width: 100%;
+        }
+
         .search { 
             background-color: #00B4CC; 
             width: 50%;
@@ -34,8 +38,10 @@ export class SearchBar extends HTMLElement {
          }
 
         .search-btn {
+            width: 2rem;
             margin-left: 11px;
-            color: #fff;
+            display: flex;
+            justify-content: center;
         }
 
         .search-bar:focus {
@@ -43,25 +49,24 @@ export class SearchBar extends HTMLElement {
         }
 
         .reset-btn { 
-            width: 40px;
-            height: 36px;
+            width: 2.5rem;
             border: 1px solid #00B4CC;
             background: #00B4CC;
-            text-align: center;
             font-size: 1rem;
             border-radius: 0 5px 5px 0;
             cursor: pointer;
             margin-right: 8px;
-            color: #fff;
             visibility: hidden;
+            display: flex;
+            justify-content: center;
         }
         </style>
         <div class="search">
         <div class="search-btn">
-        <i class="fa-solid fa-magnifying-glass"></i>
+        <img src="./img/search.png"/>
         </div>
         <input type="text" class="search-bar"/>
-        <button class="reset-btn"><i class="fa-solid fa-rectangle-xmark"></i></ㅠ>
+        <button class="reset-btn"><img src="./img/reset.png"/></button>
         </div>
         `;
     }

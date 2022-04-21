@@ -1,9 +1,8 @@
-import { fetchInfo, findInputValue, initEvents, writeInfo } from "../src/app";
-import { eventModule } from "./event"
+import { fetchInfo, debounce } from "../src/app";
 
 jest.useFakeTimers();
 
-test("fetchInfo에 '가'를 넣으면 결과 배열을 반환한다", () => {
+it("fetchInfo에 '가'를 넣으면 결과 배열을 반환한다", () => {
 
     const result = [{ "text": "가타카", "id": 1 }, { "text": "강철비", "id": 2 }, { "text": "강철비2", "id": 3 }, { "text": "기생충", "id": 4 }];
 
@@ -14,23 +13,19 @@ test("fetchInfo에 '가'를 넣으면 결과 배열을 반환한다", () => {
     });
 });
 
-test('input 이벤트가 발생하면 해당 함수가 100ms에 1번 call 된다', () => {
-    
-    const instanceMock = jest.fn();
+it('debounce 함수에서는 500ms에 1번 함수가 호출된다', () => {
 
-    document.addEventListener = jest
-        .fn()
-        .mockImplementationOnce((event, callback) => {
-            callback();
-        });
+    const mockFn = jest.fn();
 
-    jest.advanceTimersByTime(100);
-    
-    expect(document.addEventListener).toBeCalledWith(
-        "input",
-        expect.any(Function)
-    );
+    const debounceFn = debounce(mockFn, 500);
 
-    expect(instanceMock).toBeCalledTimes(1);
+    debounceFn();
     
+    expect(mockFn).not.toBeCalled();
+
+    jest.advanceTimersByTime(900);
+
+    expect(mockFn).toBeCalled();
+    expect(mockFn).toHaveBeenCalledTimes(1);
+
  });

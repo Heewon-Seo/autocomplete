@@ -1,6 +1,6 @@
 
 // caching
-import {ApiCache} from "./cache";
+import { ApiCache } from './cache';
 const apiCache = new ApiCache();
 
 // interface
@@ -12,6 +12,16 @@ interface Info {
 // utils
 function $(selector: string) {
     return document.querySelector(selector)!;
+}
+
+function debounce(func: Function, delay: number) {
+    let timer: number | undefined;
+    return function (...args:any) {
+        if (timer) {
+            clearTimeout(timer);
+        }
+        timer = setTimeout(() => func(...args), delay) as unknown as number;
+    }
 }
 
 // DOM
@@ -29,32 +39,36 @@ function startApp(): void {
 
 // events
 function initEvents(): void {
-    searchBar.addEventListener('input', findInputValue);
+    searchBar.addEventListener('input', debounce(findInputValue, 500));
 }
 
+function resetBtnClick(): void {
+    resetBtn.addEventListener('click', resetInput);
+}
+
+function focusOutInput(): void {
+    searchBar.addEventListener('focusout', resetResults);
+}
+
+function arrowKey(): void {
+    window.addEventListener('keydown', moveSelectedItem);
+}
+
+// functions
 function findInputValue(e: Event): void {
     const target = e.target;
     if (!(target instanceof HTMLInputElement)) return;
 
     let timer: number | undefined;
     let value: string = target.value;
-    
+
     if (value != '') {
         showResetBtn();
-        if (timer) {
-            clearTimeout(timer);
-        }
-        timer = setTimeout(function () {
-            writeInfo(value);
-        }, 100) as unknown as number;
+        writeInfo(value);
     } else {
         resetResults();
         removeResetBtn();
     }
-}
-
-function resetBtnClick(): void {
-    resetBtn.addEventListener('click', resetInput);
 }
 
 function resetResults(): void {
@@ -67,14 +81,6 @@ function resetInput(): void {
     removeResetBtn();
 }
 
-function focusOutInput(): void {
-    searchBar.addEventListener('focusout', resetResults);
-}
-
-function arrowKey(): void {
-    window.addEventListener('keydown', moveSelectedItem);
-}
-
 function showResetBtn(): void {
     resetBtn.classList.add('show');
 }
@@ -85,9 +91,11 @@ function removeResetBtn(): void {
 
 function moveSelectedItem(e: KeyboardEvent): void {
     if (resultArea.childElementCount > 0) {
+        
         let selectedItem = $('.selected');
         let previousItem = selectedItem.previousElementSibling;
         let nextItem = selectedItem.nextElementSibling;
+
         if (e.keyCode === 38 && previousItem != null) {
             e.preventDefault();
             previousItem.classList.add('selected');
@@ -108,8 +116,8 @@ function fetchInfo(value:string): Promise<Info[]> {
         return new Promise(resolve => 
             resolve(apiCache.get(url)));
     }
-    return fetch(url).then(function(response: any){
-        let result: Info[] = response.json();
+    return fetch(url).then(function(response: Response){
+        let result = response.json();
         apiCache.set(url, result);
         return result;
     });
@@ -117,7 +125,7 @@ function fetchInfo(value:string): Promise<Info[]> {
 
 async function writeInfo(value:string): Promise<void> {
     const info: Info[] = await fetchInfo(value);
-    setResultList(info);
+    if (info.length!==0) setResultList(info);
 }
 
 function setResultList(data:Info[]): void {
@@ -139,13 +147,14 @@ function setResultList(data:Info[]): void {
         li.appendChild(span);
         resultArea.append(li);
     });
-    
+
     resultArea.classList.add("show");
 }
 
+// start app
 document.addEventListener('DOMContentLoaded', () => {
     startApp();
 });
 
 
-export { fetchInfo, findInputValue, writeInfo, initEvents };
+export { fetchInfo, debounce, initEvents };
